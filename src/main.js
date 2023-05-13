@@ -126,7 +126,7 @@ const table = [
     'Og', 'Oganesson', '(294)', 18, 7
 ];
 
-let camera, scene, renderer;
+let camera, scene, renderer, loader;
 let controls;
 
 const objects = [];
@@ -141,6 +141,8 @@ function init() {
     camera.position.z = 3000;
 
     scene = new THREE.Scene();
+
+    loader = new GLTFLoader();
 
     // table
 
@@ -169,6 +171,24 @@ function init() {
         objectCSS.position.x = Math.random() * 4000 - 2000;
         objectCSS.position.y = Math.random() * 4000 - 2000;
         objectCSS.position.z = Math.random() * 4000 - 2000;
+
+        objectCSS.element.addEventListener('mousedown', function () {
+
+            loader.load('https://storage.googleapis.com/search-ar-edu/periodic-table/element_001_hydrogen/element_001_hydrogen.glb',
+                function ( gltf ) {
+                    controls.target.copy(gltf.scene);
+                    camera.position.z = 1;
+
+                    console.log( gltf.scene );
+                    scene.add( gltf.scene );
+                    render();
+
+                }, undefined, function ( error ) {
+
+                    console.error( error );
+
+                } );
+        });
 
         objectCSS.element.addEventListener('mouseenter', function () {
 
