@@ -148,7 +148,7 @@ function init() {
 
         const element = document.createElement( 'div' );
         element.className = 'element';
-        element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+        element.style.backgroundColor = 'rgba(0,127,127,0.5)';
 
         const number = document.createElement( 'div' );
         number.className = 'number';
@@ -170,44 +170,48 @@ function init() {
         objectCSS.position.y = Math.random() * 4000 - 2000;
         objectCSS.position.z = Math.random() * 4000 - 2000;
 
-        element.addEventListener('mouseenter', function () {
-            new TWEEN.Tween( objectCSS.scale )
-                .to({x: 2, y:2, z:2}, 200)
+        objectCSS.element.addEventListener('mouseenter', function () {
+
+            new TWEEN.Tween( objectCSS.position )
+                .to({z: 100}, 200)
                 .easing(TWEEN.Easing.Exponential.InOut)
                 .start()
 
-            new TWEEN.Tween( objectCSS.element.style )
-                .to({backgroundColor: 'rgba(0,127,127,' + 1.0 + ')'}, 200)
+            new TWEEN.Tween( objectCSS.scale )
+                .to({x: 2, y:2}, 200)
                 .easing(TWEEN.Easing.Exponential.InOut)
-                .start();
+                .start()
 
             new TWEEN.Tween( this )
-                .to( {}, 200*2)
+                .to( {}, 200)
                 .onUpdate( render )
                 .start();
+
+            objectCSS.element.style.backgroundColor = 'rgba(0,127,127,1)';
         });
 
-        element.addEventListener('mouseleave', function () {
+        objectCSS.element.addEventListener('mouseleave', function () {
+
             new TWEEN.Tween( objectCSS.scale )
-                .to({x: 1, y:1, z:1}, 200)
+                .to({x: 1, y:1}, 200)
                 .easing(TWEEN.Easing.Exponential.InOut)
                 .start()
 
-            new TWEEN.Tween( objectCSS.element.style )
-                .to({backgroundColor: 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')'}, 200)
+            new TWEEN.Tween( objectCSS.position )
+                .to({z: 0}, 200)
                 .easing(TWEEN.Easing.Exponential.InOut)
-                .start();
+                .start()
 
             new TWEEN.Tween( this )
-                .to( {}, 200*2)
+                .to( {}, 200)
                 .onUpdate( render )
                 .start();
+
+            objectCSS.element.style.backgroundColor = 'rgba(0,127,127,0.5)';
         });
 
         scene.add( objectCSS );
         objects.push( objectCSS );
-
-        //
 
         const object = new THREE.Object3D();
         object.position.x = ( table[ i + 3 ] * 140 ) - 1330;
@@ -219,61 +223,61 @@ function init() {
 
     // sphere
 
-    const vector = new THREE.Vector3();
-
-    for ( let i = 0, l = objects.length; i < l; i ++ ) {
-
-        const phi = Math.acos( - 1 + ( 2 * i ) / l );
-        const theta = Math.sqrt( l * Math.PI ) * phi;
-
-        const object = new THREE.Object3D();
-
-        object.position.setFromSphericalCoords( 800, phi, theta );
-
-        vector.copy( object.position ).multiplyScalar( 2 );
-
-        object.lookAt( vector );
-
-        targets.sphere.push( object );
-
-    }
-
-    // helix
-
-    for ( let i = 0, l = objects.length; i < l; i ++ ) {
-
-        const theta = i * 0.175 + Math.PI;
-        const y = - ( i * 8 ) + 450;
-
-        const object = new THREE.Object3D();
-
-        object.position.setFromCylindricalCoords( 900, theta, y );
-
-        vector.x = object.position.x * 2;
-        vector.y = object.position.y;
-        vector.z = object.position.z * 2;
-
-        object.lookAt( vector );
-
-        targets.helix.push( object );
-
-    }
-
-    // grid
-
-    for ( let i = 0; i < objects.length; i ++ ) {
-
-        const object = new THREE.Object3D();
-
-        object.position.x = ( ( i % 5 ) * 400 ) - 800;
-        object.position.y = ( - ( Math.floor( i / 5 ) % 5 ) * 400 ) + 800;
-        object.position.z = ( Math.floor( i / 25 ) ) * 1000 - 2000;
-
-        targets.grid.push( object );
-
-    }
-
+    // const vector = new THREE.Vector3();
     //
+    // for ( let i = 0, l = objects.length; i < l; i ++ ) {
+    //
+    //     const phi = Math.acos( - 1 + ( 2 * i ) / l );
+    //     const theta = Math.sqrt( l * Math.PI ) * phi;
+    //
+    //     const object = new THREE.Object3D();
+    //
+    //     object.position.setFromSphericalCoords( 800, phi, theta );
+    //
+    //     vector.copy( object.position ).multiplyScalar( 2 );
+    //
+    //     object.lookAt( vector );
+    //
+    //     targets.sphere.push( object );
+    //
+    // }
+    //
+    // // helix
+    //
+    // for ( let i = 0, l = objects.length; i < l; i ++ ) {
+    //
+    //     const theta = i * 0.175 + Math.PI;
+    //     const y = - ( i * 8 ) + 450;
+    //
+    //     const object = new THREE.Object3D();
+    //
+    //     object.position.setFromCylindricalCoords( 900, theta, y );
+    //
+    //     vector.x = object.position.x * 2;
+    //     vector.y = object.position.y;
+    //     vector.z = object.position.z * 2;
+    //
+    //     object.lookAt( vector );
+    //
+    //     targets.helix.push( object );
+    //
+    // }
+    //
+    // // grid
+    //
+    // for ( let i = 0; i < objects.length; i ++ ) {
+    //
+    //     const object = new THREE.Object3D();
+    //
+    //     object.position.x = ( ( i % 5 ) * 400 ) - 800;
+    //     object.position.y = ( - ( Math.floor( i / 5 ) % 5 ) * 400 ) + 800;
+    //     object.position.z = ( Math.floor( i / 25 ) ) * 1000 - 2000;
+    //
+    //     targets.grid.push( object );
+    //
+    // }
+    //
+    // //
 
     renderer = new CSS3DRenderer();
     renderer.setSize( window.innerWidth, window.innerHeight );
@@ -286,37 +290,35 @@ function init() {
     controls.maxDistance = 6000;
     controls.addEventListener( 'change', render );
 
-    const buttonTable = document.getElementById( 'table' );
-    buttonTable.addEventListener( 'click', function () {
-
-        transform( targets.table, 2000 );
-
-    } );
-
-    const buttonSphere = document.getElementById( 'sphere' );
-    buttonSphere.addEventListener( 'click', function () {
-
-        transform( targets.sphere, 2000 );
-
-    } );
-
-    const buttonHelix = document.getElementById( 'helix' );
-    buttonHelix.addEventListener( 'click', function () {
-
-        transform( targets.helix, 2000 );
-
-    } );
-
-    const buttonGrid = document.getElementById( 'grid' );
-    buttonGrid.addEventListener( 'click', function () {
-
-        transform( targets.grid, 2000 );
-
-    } );
+    // const buttonTable = document.getElementById( 'table' );
+    // buttonTable.addEventListener( 'click', function () {
+    //
+    //     transform( targets.table, 2000 );
+    //
+    // } );
+    //
+    // const buttonSphere = document.getElementById( 'sphere' );
+    // buttonSphere.addEventListener( 'click', function () {
+    //
+    //     transform( targets.sphere, 2000 );
+    //
+    // } );
+    //
+    // const buttonHelix = document.getElementById( 'helix' );
+    // buttonHelix.addEventListener( 'click', function () {
+    //
+    //     transform( targets.helix, 2000 );
+    //
+    // } );
+    //
+    // const buttonGrid = document.getElementById( 'grid' );
+    // buttonGrid.addEventListener( 'click', function () {
+    //
+    //     transform( targets.grid, 2000 );
+    //
+    // } );
 
     transform( targets.table, 2000 );
-
-    //
 
     window.addEventListener( 'resize', onWindowResize );
 
