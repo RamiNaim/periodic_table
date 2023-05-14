@@ -293,7 +293,6 @@ function init() {
                     const buttonElement = menu.appendChild(button);
                     buttonElement.id = 'close';
                     buttonElement.textContent = 'X';
-// https://storage.googleapis.com/search-ar-edu/periodic-table/element_110_darmstadtium/element_110_darmstadtium.glb
                     buttonElement.addEventListener('click', function () {
                         setCameraControl(cameraInitPosition, controlInitTarget);
                         buttonElement.remove();
