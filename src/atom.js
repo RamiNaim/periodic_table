@@ -33,27 +33,12 @@ controls.enableDamping = true
 const loader = new GLTFLoader()
     loader.load('https://storage.googleapis.com/search-ar-edu/periodic-table/element_001_hydrogen/element_001_hydrogen.glb',
     function (gltf) {
-        // gltf.scene.traverse(function (child) {
-        //     if ((child as THREE.Mesh).isMesh) {
-        //         const m = (child as THREE.Mesh)
-        //         m.receiveShadow = true
-        //         m.castShadow = true
-        //     }
-        //     if (((child as THREE.Light)).isLight) {
-        //         const l = (child as THREE.Light)
-        //         l.castShadow = true
-        //         l.shadow.bias = -.003
-        //         l.shadow.mapSize.width = 2048
-        //         l.shadow.mapSize.height = 2048
-        //     }
-        // })
         gltf.scene.animations = gltf.animations;
+        gltf.scene.scale.set(4, 4, 4);
+
+        scene.add(gltf.scene);
         mixer = new THREE.AnimationMixer(gltf.scene);
         mixer.clipAction(gltf.scene.animations[0]).play();
-
-        animate();
-
-        scene.add(gltf.scene)
     },
     (xhr) => {
         console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
@@ -75,7 +60,10 @@ function animate() {
     requestAnimationFrame(animate)
 
     const delta = clock.getDelta();
-    mixer.update(delta);
+
+    if (mixer !== undefined){
+        mixer.update(delta);
+    }
 
     controls.update()
 

@@ -115,7 +115,7 @@ const table = [
     'Bh', 'Bohrium', '(272)', 7, 7,
     'Hs', 'Hassium', '(270)', 8, 7,
     'Mt', 'Meitnerium', '(276)', 9, 7,
-    'Ds', 'Darmstadium', '(281)', 10, 7,
+    'Ds', 'Darmstadtium', '(281)', 10, 7,
     'Rg', 'Roentgenium', '(280)', 11, 7,
     'Cn', 'Copernicium', '(285)', 12, 7,
     'Nh', 'Nihonium', '(286)', 13, 7,
@@ -126,11 +126,96 @@ const table = [
     'Og', 'Oganesson', '(294)', 18, 7
 ];
 
-let camera, scene, renderer, loader;
+let camera, scene, renderer, glRenderer, loader, mixer, clock, currentAtomModel;
 let controls;
 
 const objects = [];
 const targets = { table: [], sphere: [], helix: [], grid: [] };
+
+const cameraInitPosition = {x: 0, y: 0, z: 3000};
+const controlInitTarget = {x: 0, y: 0, z: 0};
+const atomPosition = {x: 3000, y: 3000, z: 1000};
+const highlighTargetPosition = atomPosition;
+const highlighCameraPosition = {x: atomPosition.x - 500, y:atomPosition.y - 500, z: atomPosition.z + 1000}
+
+function removeAtomModel() {
+    let atomModel = scene.getObjectByName('atomModel');
+    if (atomModel !== undefined) {
+        scene.remove(atomModel);
+    }
+}
+function setCameraControl(cameraPosition, controlTarget) {
+    new TWEEN.Tween( camera.position )
+        .to(cameraPosition, 3000)
+        .easing(TWEEN.Easing.Exponential.InOut)
+        .start()
+
+    new TWEEN.Tween( controls.target )
+        .to(controlTarget, 3000)
+        .easing(TWEEN.Easing.Exponential.InOut)
+        .start()
+
+    new TWEEN.Tween( this )
+        .to( {}, 2000*2)
+        .onUpdate( render )
+        .onComplete(controls.update)
+        .start();
+
+    camera.updateProjectionMatrix();
+    controls.update();
+}
+
+function addAtomModel(gltf){
+    gltf.scene.animations = gltf.animations;
+    gltf.scene.scale.set(1000, 1000, 1000);
+    gltf.scene.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
+    gltf.scene.rotation.x += 0.5;
+    gltf.scene.rotation.z += 0.5;
+
+    removeAtomModel();
+
+    gltf.scene.name = 'atomModel';
+    scene.add(gltf.scene);
+    mixer = new THREE.AnimationMixer(gltf.scene);
+    mixer.clipAction(gltf.scene.animations[0]).play();
+
+    render();
+    animate();
+}
+
+function setUpLights(){
+    const light1 = new THREE.SpotLight();
+    light1.position.set(atomPosition.x + 500, atomPosition.y + 500, atomPosition.z);
+    light1.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
+    light1.target.updateMatrixWorld();
+    const light1helper = new THREE.SpotLightHelper(light1);
+    scene.add(light1);
+    scene.add(light1helper);
+
+    const light2 = new THREE.SpotLight();
+    light2.position.set(atomPosition.x - 500, atomPosition.y - 500, atomPosition.z);
+    light2.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
+    light2.target.updateMatrixWorld();
+    const light2helper = new THREE.SpotLightHelper(light2);
+    scene.add(light2);
+    scene.add(light2helper);
+
+    const light3 = new THREE.SpotLight();
+    light3.position.set(atomPosition.x + 500, atomPosition.y - 500, atomPosition.z);
+    light3.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
+    light3.target.updateMatrixWorld();
+    const light3helper = new THREE.SpotLightHelper(light3);
+    scene.add(light3);
+    scene.add(light3helper);
+
+    const light4 = new THREE.SpotLight();
+    light4.position.set(atomPosition.x - 500, atomPosition.y + 500, atomPosition.z);
+    light4.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
+    light4.target.updateMatrixWorld();
+    const light4helper = new THREE.SpotLightHelper(light4);
+    scene.add(light4);
+    scene.add(light4helper);
+}
 
 init();
 animate();
@@ -138,11 +223,29 @@ animate();
 function init() {
 
     camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
-    camera.position.z = 3000;
+    camera.position.set(cameraInitPosition.x, cameraInitPosition.y, cameraInitPosition.z);
 
     scene = new THREE.Scene();
+    scene.add(new THREE.AxesHelper(1000));
 
     loader = new GLTFLoader();
+    clock = new THREE.Clock();
+
+    renderer = new CSS3DRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    document.querySelector( '#css' ).appendChild( renderer.domElement );
+
+    glRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    glRenderer.setSize(window.innerWidth, window.innerHeight);
+    document.querySelector( '#webgl' ).appendChild( glRenderer.domElement );
+
+    controls = new TrackballControls( camera, renderer.domElement );
+
+    controls.minDistance = 500;
+    controls.maxDistance = 6000;
+    controls.addEventListener( 'change', render );
+
+    setUpLights();
 
     // table
 
@@ -174,20 +277,36 @@ function init() {
 
         objectCSS.element.addEventListener('mousedown', function () {
 
-            loader.load('https://storage.googleapis.com/search-ar-edu/periodic-table/element_001_hydrogen/element_001_hydrogen.glb',
-                function ( gltf ) {
-                    controls.target.copy(gltf.scene);
-                    camera.position.z = 1;
+            let name = String(( i / 5 ) + 1);
+            while (name.length !== 3){
+                name = '0' + name;
+            }
+            name += '_' + table[ i + 1 ].toLowerCase();
 
-                    console.log( gltf.scene );
-                    scene.add( gltf.scene );
-                    render();
+            loader.load(`https://storage.googleapis.com/search-ar-edu/periodic-table/element_${name}/element_${name}.glb`,
+                function (gltf) {
+                    addAtomModel(gltf);
+                    setCameraControl(highlighCameraPosition, highlighTargetPosition);
 
-                }, undefined, function ( error ) {
+                    const menu = document.getElementById('menu');
+                    const button = document.createElement( 'button' );
+                    const buttonElement = menu.appendChild(button);
+                    buttonElement.id = 'close';
+                    buttonElement.textContent = 'X';
+// https://storage.googleapis.com/search-ar-edu/periodic-table/element_110_darmstadtium/element_110_darmstadtium.glb
+                    buttonElement.addEventListener('click', function () {
+                        setCameraControl(cameraInitPosition, controlInitTarget);
+                        buttonElement.remove();
+                    });
 
-                    console.error( error );
-
-                } );
+                },
+                (xhr) => {
+                    console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+                },
+                (error) => {
+                    console.log(error)
+                }
+            );
         });
 
         objectCSS.element.addEventListener('mouseenter', function () {
@@ -241,103 +360,6 @@ function init() {
 
     }
 
-    // sphere
-
-    // const vector = new THREE.Vector3();
-    //
-    // for ( let i = 0, l = objects.length; i < l; i ++ ) {
-    //
-    //     const phi = Math.acos( - 1 + ( 2 * i ) / l );
-    //     const theta = Math.sqrt( l * Math.PI ) * phi;
-    //
-    //     const object = new THREE.Object3D();
-    //
-    //     object.position.setFromSphericalCoords( 800, phi, theta );
-    //
-    //     vector.copy( object.position ).multiplyScalar( 2 );
-    //
-    //     object.lookAt( vector );
-    //
-    //     targets.sphere.push( object );
-    //
-    // }
-    //
-    // // helix
-    //
-    // for ( let i = 0, l = objects.length; i < l; i ++ ) {
-    //
-    //     const theta = i * 0.175 + Math.PI;
-    //     const y = - ( i * 8 ) + 450;
-    //
-    //     const object = new THREE.Object3D();
-    //
-    //     object.position.setFromCylindricalCoords( 900, theta, y );
-    //
-    //     vector.x = object.position.x * 2;
-    //     vector.y = object.position.y;
-    //     vector.z = object.position.z * 2;
-    //
-    //     object.lookAt( vector );
-    //
-    //     targets.helix.push( object );
-    //
-    // }
-    //
-    // // grid
-    //
-    // for ( let i = 0; i < objects.length; i ++ ) {
-    //
-    //     const object = new THREE.Object3D();
-    //
-    //     object.position.x = ( ( i % 5 ) * 400 ) - 800;
-    //     object.position.y = ( - ( Math.floor( i / 5 ) % 5 ) * 400 ) + 800;
-    //     object.position.z = ( Math.floor( i / 25 ) ) * 1000 - 2000;
-    //
-    //     targets.grid.push( object );
-    //
-    // }
-    //
-    // //
-
-    renderer = new CSS3DRenderer();
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    document.getElementById( 'container' ).appendChild( renderer.domElement );
-
-    //
-
-    controls = new TrackballControls( camera, renderer.domElement );
-    controls.minDistance = 500;
-    controls.maxDistance = 6000;
-    controls.addEventListener( 'change', render );
-
-    // const buttonTable = document.getElementById( 'table' );
-    // buttonTable.addEventListener( 'click', function () {
-    //
-    //     transform( targets.table, 2000 );
-    //
-    // } );
-    //
-    // const buttonSphere = document.getElementById( 'sphere' );
-    // buttonSphere.addEventListener( 'click', function () {
-    //
-    //     transform( targets.sphere, 2000 );
-    //
-    // } );
-    //
-    // const buttonHelix = document.getElementById( 'helix' );
-    // buttonHelix.addEventListener( 'click', function () {
-    //
-    //     transform( targets.helix, 2000 );
-    //
-    // } );
-    //
-    // const buttonGrid = document.getElementById( 'grid' );
-    // buttonGrid.addEventListener( 'click', function () {
-    //
-    //     transform( targets.grid, 2000 );
-    //
-    // } );
-
     transform( targets.table, 2000 );
 
     window.addEventListener( 'resize', onWindowResize );
@@ -385,16 +407,23 @@ function onWindowResize() {
 
 function animate() {
 
-    requestAnimationFrame( animate );
+    if (mixer !== undefined){
+        const delta = clock.getDelta();
+        mixer.update(delta);
+    }
 
     TWEEN.update();
-
     controls.update();
 
+    scene.updateMatrixWorld();
+    requestAnimationFrame( animate );
+
+    // TODO: check if any WebJL objects in view
+    glRenderer.render( scene, camera );
 }
 
 function render() {
 
+    glRenderer.render( scene, camera );
     renderer.render( scene, camera );
-
 }
