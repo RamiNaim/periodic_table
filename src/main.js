@@ -135,8 +135,8 @@ const targets = { table: [], sphere: [], helix: [], grid: [] };
 const cameraInitPosition = {x: 0, y: 0, z: 3000};
 const controlInitTarget = {x: 0, y: 0, z: 0};
 const atomPosition = {x: 3000, y: 3000, z: 1000};
-const highlighTargetPosition = atomPosition;
-const highlighCameraPosition = {x: atomPosition.x - 500, y:atomPosition.y - 500, z: atomPosition.z + 1000}
+const highlightTargetPosition = atomPosition;
+const highlightCameraPosition = {x: atomPosition.x - 500, y:atomPosition.y - 500, z: atomPosition.z + 1000}
 
 function removeAtomModel() {
     let atomModel = scene.getObjectByName('atomModel');
@@ -278,7 +278,7 @@ function init() {
             loader.load(`https://storage.googleapis.com/search-ar-edu/periodic-table/element_${name}/element_${name}.glb`,
                 function (gltf) {
                     addAtomModel(gltf);
-                    setCameraControl(highlighCameraPosition, highlighTargetPosition);
+                    setCameraControl(highlightCameraPosition, highlightTargetPosition);
 
                     const menu = document.getElementById('menu');
                     const button = document.createElement( 'button' );
