@@ -188,33 +188,25 @@ function setUpLights(){
     light1.position.set(atomPosition.x + 500, atomPosition.y + 500, atomPosition.z);
     light1.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
     light1.target.updateMatrixWorld();
-    const light1helper = new THREE.SpotLightHelper(light1);
     scene.add(light1);
-    scene.add(light1helper);
 
     const light2 = new THREE.SpotLight();
     light2.position.set(atomPosition.x - 500, atomPosition.y - 500, atomPosition.z);
     light2.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
     light2.target.updateMatrixWorld();
-    const light2helper = new THREE.SpotLightHelper(light2);
     scene.add(light2);
-    scene.add(light2helper);
 
     const light3 = new THREE.SpotLight();
     light3.position.set(atomPosition.x + 500, atomPosition.y - 500, atomPosition.z);
     light3.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
     light3.target.updateMatrixWorld();
-    const light3helper = new THREE.SpotLightHelper(light3);
     scene.add(light3);
-    scene.add(light3helper);
 
     const light4 = new THREE.SpotLight();
     light4.position.set(atomPosition.x - 500, atomPosition.y + 500, atomPosition.z);
     light4.target.position.set(atomPosition.x, atomPosition.y, atomPosition.z);
     light4.target.updateMatrixWorld();
-    const light4helper = new THREE.SpotLightHelper(light4);
     scene.add(light4);
-    scene.add(light4helper);
 }
 
 init();
