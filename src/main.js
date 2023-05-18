@@ -4,7 +4,7 @@ import TWEEN from 'three/addons/libs/tween.module.js';
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { elementsTable } from '../public/periodicTable.json';
+import { elementsTable } from '/public/periodicTable.json';
 
 let camera, scene, renderer, glRenderer, loader, mixer, clock;
 let controls;

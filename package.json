@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx vite --config vite.config.js --host 0.0.0.0 src",
-    "build": "npx vite build --config vite.config.js --outDir ../dist src",
+    "build": "npx vite build --config vite.config.js --emptyOutDir --outDir ../dist src",
     "build-gh": "gh-pages -d ./dist/"
   },
   "keywords": [],
