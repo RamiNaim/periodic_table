@@ -5,6 +5,7 @@ import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { elementsTable } from '/public/periodicTable.json';
+import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 let camera, scene, renderer, glRenderer, loader, mixer, clock;
 let controls;
@@ -140,6 +141,8 @@ animate();
 function init() {
 
     camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+    // const camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,
+    //     window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
     camera.position.set(cameraInitPosition.x, cameraInitPosition.y, cameraInitPosition.z);
 
     scene = new THREE.Scene();
@@ -155,10 +158,17 @@ function init() {
     glRenderer.setSize(window.innerWidth, window.innerHeight);
     document.querySelector( '#webgl' ).appendChild( glRenderer.domElement );
 
-    controls = new TrackballControls( camera, renderer.domElement );
+    controls = new OrbitControls( camera, renderer.domElement );
 
     controls.minDistance = 500;
     controls.maxDistance = 6000;
+
+    controls.minAzimuthAngle = -0.1;
+    controls.maxAzimuthAngle = 0.1;
+
+    controls.minPolarAngle = Math.PI / 2 - 0.1;
+    controls.maxPolarAngle = Math.PI / 2 + 0.1;
+
     controls.addEventListener( 'change', render );
 
     setUpLights();
