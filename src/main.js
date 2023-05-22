@@ -6,17 +6,17 @@ import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { elementsTable } from '/public/periodicTable.json';
 
-let camera, scene, renderer, glRenderer, loader, mixer, clock;
-let controls;
+let camera, scene, renderer, glRenderer, loader, mixer, clock, controls;
+let isHighlighted = false;
 
 const objects = [];
 const targets = { table: [], sphere: [], helix: [], grid: [] };
 
 const cameraInitPosition = {x: 0, y: 0, z: 3000};
 const controlInitTarget = {x: 0, y: 0, z: 0};
-const atomPosition = {x: 3000, y: 3000, z: 1000};
-const highlightTargetPosition = {x: atomPosition.x * 1.30, y:atomPosition.y, z: atomPosition.z}; //atomPosition;
-const highlightCameraPosition = {x: atomPosition.x * 1.30, y:atomPosition.y, z: atomPosition.z * 3};
+let atomPosition = {x: 3000, y: 3000, z: 1000};
+let highlightTargetPosition = {x: atomPosition.x * 1.30, y:atomPosition.y, z: atomPosition.z};
+let highlightCameraPosition = {x: atomPosition.x * 1.30, y:atomPosition.y, z: atomPosition.z * 3};
 
 function removeElementModel() {
     let elementModel = scene.getObjectByName('elementModel');
@@ -139,8 +139,6 @@ animate();
 function init() {
 
     camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
-    // const camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,
-    //     window.innerHeight / 2, window.innerHeight / - 2, 1, 1000 );
     camera.position.set(cameraInitPosition.x, cameraInitPosition.y, cameraInitPosition.z);
 
     scene = new THREE.Scene();
@@ -158,10 +156,13 @@ function init() {
 
     controls = new TrackballControls( camera, renderer.domElement);
 
-    controls.noRotate = true;
+    controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+    controls.mouseButtons.MIDDLE = THREE.MOUSE.ZOOM;
+    controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
 
+    controls.noRotate = true;
     controls.minDistance = 500;
-    controls.maxDistance = 6000;
+    controls.maxDistance = 4000;
 
     controls.addEventListener( 'change', render );
 
@@ -187,7 +188,7 @@ function init() {
 
         const details = document.createElement( 'div' );
         details.className = 'details';
-        details.innerHTML = el.name + '<br>' + el.atomic_mass; //table[ i + 1 ] + '<br>' + table[ i + 2 ];
+        details.innerHTML = el.name + '<br>' + el.atomic_mass;
         element.appendChild( details );
 
         const objectCSS = new CSS3DObject( element );
@@ -196,32 +197,37 @@ function init() {
         objectCSS.position.z = Math.random() * 4000 - 2000;
 
         objectCSS.element.addEventListener('mousedown', function () {
+            if (!isHighlighted){
+                isHighlighted = true;
+                controls.noPan = true;
+                loader.load(el.bohr_model_3d,
+                    function (gltf) {
+                        addElementModel(gltf);
+                        setCameraControl(highlightCameraPosition, highlightTargetPosition);
+                        const elementCard = addElementCard(el);
+                        scene.add( elementCard );
 
-            loader.load(el.bohr_model_3d,
-                function (gltf) {
-                    addElementModel(gltf);
-                    setCameraControl(highlightCameraPosition, highlightTargetPosition);
-                    const elementCard = addElementCard(el);
-                    scene.add( elementCard );
+                        const menu = document.getElementById('menu');
+                        const button = document.createElement( 'button' );
+                        const buttonElement = menu.appendChild(button);
+                        buttonElement.id = 'close';
+                        buttonElement.textContent = 'X';
+                        buttonElement.addEventListener('click', function () {
+                            setCameraControl(cameraInitPosition, controlInitTarget);
+                            buttonElement.remove();
+                            isHighlighted = false;
+                            controls.noPan = false;
+                        });
 
-                    const menu = document.getElementById('menu');
-                    const button = document.createElement( 'button' );
-                    const buttonElement = menu.appendChild(button);
-                    buttonElement.id = 'close';
-                    buttonElement.textContent = 'X';
-                    buttonElement.addEventListener('click', function () {
-                        setCameraControl(cameraInitPosition, controlInitTarget);
-                        buttonElement.remove();
-                    });
-
-                },
-                (xhr) => {
-                    console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
-                },
-                (error) => {
-                    console.log(error)
-                }
-            );
+                    },
+                    (xhr) => {
+                        // console.log((xhr.loaded / xhr.total) * 100 + '% loaded')
+                    },
+                    (error) => {
+                        console.log(error)
+                    }
+                );
+            }
         });
 
         objectCSS.element.addEventListener('mouseenter', function () {
