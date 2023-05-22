@@ -258,7 +258,7 @@
 
     if (typeof define === 'function' && define.amd) {
         setBodyClass("initialized");
-        define(['PleaseRotate'], function() {
+        define(['src/public/pleaserotate'], function() {
             return PleaseRotate;
         });
     } else if (typeof exports === 'object') {
