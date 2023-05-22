@@ -27,6 +27,26 @@
 			}
 		</script>
 
+<style>
+    /* style the elements with CSS */
+    #pleaserotate-graphic{
+        fill: #fff;
+    }
+
+    #pleaserotate-backdrop {
+        --c1: #122538;
+        --c2: #112233;
+        background: repeating-linear-gradient(
+                -45deg,
+                var(--c1),
+                var(--c1) 20px,
+                var(--c2) 20px,
+                var(--c2) 40px
+        );
+    }
+</style>
+<script src="pleaserotate.js"></script>
+
 <script type="module" src="main.js">
     </script>
 </body>
