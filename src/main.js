@@ -5,7 +5,6 @@ import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { elementsTable } from '/public/periodicTable.json';
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 
 let camera, scene, renderer, glRenderer, loader, mixer, clock;
 let controls;
@@ -105,7 +104,6 @@ function addElementCard(el){
     const imgBox = document.createElement( 'img' );
     imgBox.className = 'imgBox';
     imgBox.src = el.image.url;
-    // imgBox.src = ;
     elementCard.appendChild( imgBox );
 
     const imgCaption = document.createElement( 'div' );
@@ -158,16 +156,12 @@ function init() {
     glRenderer.setSize(window.innerWidth, window.innerHeight);
     document.querySelector( '#webgl' ).appendChild( glRenderer.domElement );
 
-    controls = new OrbitControls( camera, renderer.domElement );
+    controls = new TrackballControls( camera, renderer.domElement);
+
+    controls.noRotate = true;
 
     controls.minDistance = 500;
     controls.maxDistance = 6000;
-
-    controls.minAzimuthAngle = -0.1;
-    controls.maxAzimuthAngle = 0.1;
-
-    controls.minPolarAngle = Math.PI / 2 - 0.1;
-    controls.maxPolarAngle = Math.PI / 2 + 0.1;
 
     controls.addEventListener( 'change', render );
 
